@@ -4,7 +4,7 @@
 
 A cat lives in your VS Code sidebar and reacts to your coding activity — and to your Claude Code sessions.
 
-![Working Cat demo](assets/demo.gif)
+![Working Cat demo](https://raw.githubusercontent.com/qvtec/vscode-working-cat/main/assets/demo.gif)
 
 ## Features
 

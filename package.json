@@ -2,12 +2,12 @@
   "name": "vscode-working-cat",
   "displayName": "Working Cat",
   "description": "A cat that reacts to your coding activity and Claude Code sessions",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "qvtec3",
   "icon": "assets/cat.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/qvtec3/vscode-working-cat"
+    "url": "https://github.com/qvtec/vscode-working-cat"
   },
   "keywords": ["cat", "claude", "ai", "activity", "fun"],
   "galleryBanner": {
@@ -75,7 +75,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "package": "vsce package",
-    "reinstall": "npm run compile && npm run package && code --install-extension vscode-working-cat-1.0.0.vsix"
+    "reinstall": "npm run compile && npm run package && code --install-extension vscode-working-cat-1.0.2.vsix"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

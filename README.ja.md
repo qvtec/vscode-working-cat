@@ -2,7 +2,7 @@
 
 VS Code のサイドバーに猫が住んでいます。あなたのコーディング活動や Claude Code セッションに反応してアニメーションします。
 
-![Working Cat demo](assets/demo.gif)
+![Working Cat demo](https://raw.githubusercontent.com/qvtec/vscode-working-cat/main/assets/demo.gif)
 
 ## 機能
 
