@@ -4,7 +4,7 @@
 
 A cat lives in your VS Code sidebar and reacts to your coding activity — and to your Claude Code sessions.
 
-<video src="assets/demo.mp4" autoplay loop muted playsinline></video>
+![Working Cat demo](assets/demo.gif)
 
 ## Features
 
