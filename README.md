@@ -1,4 +1,4 @@
-# Working Cat
+# Working Cat for Claude Code
 
 [日本語版はこちら](README.ja.md)
 

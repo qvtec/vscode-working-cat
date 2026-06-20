@@ -1,4 +1,4 @@
-# Working Cat
+# Working Cat for Claude Code
 
 VS Code のサイドバーに猫が住んでいます。あなたのコーディング活動や Claude Code セッションに反応してアニメーションします。
 
