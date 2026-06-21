@@ -90,16 +90,24 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
       saved:            [['cat3_1.png']],
       sleeping:         [['cat6_1.png']],
       error:            [['cat8_1.png']],
-      claude_idle:      [['cat1_1.png', 'cat1_2.png']],
-      claude_thinking:  [['cat2_1.png', 'cat2_2.png', 'cat2_3.png'], ['cat4_1.png', 'cat4_2.png']],
+      claude_idle:      [['cat6_1.png', 'cat6_2.png']],
+      claude_thinking:  [['cat2_1.png', 'cat2_2.png', 'cat2_3.png'], ['cat4_1.png', 'cat4_2.png'], ['cat1_1.png', 'cat1_2.png']],
       claude_complete:  [['cat3_1.png']],
-      claude_permission:[['cat5_1.png'], ['cat1_1.png', 'cat1_2.png'], ['cat8_1.png']],
+      claude_permission:[['cat5_1.png']],
     };
 
     const imageUriMap: Record<string, string[][]> = {};
     for (const [state, patterns] of Object.entries(images)) {
       imageUriMap[state] = patterns.map(frames => frames.map(f => assetUri(f).toString()));
     }
+
+    const decoMap: Record<string, string> = {
+      glasses:   assetUri('decorations/deco_glasses.png').toString(),
+      ribbon:    assetUri('decorations/deco_ribbon.png').toString(),
+      crown:     assetUri('decorations/deco_crown.png').toString(),
+      flower:    assetUri('decorations/deco_flower.png').toString(),
+      strawhat:  assetUri('decorations/deco_strawhat.png').toString(),
+    };
 
     // Sprite sheet definitions: state -> { cols, rows, totalFrames, interval(ms) }
     const spriteMap: Record<string, { cols: number; rows: number; totalFrames: number; interval: number }> = {};
@@ -116,7 +124,9 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     #bg { width: 100%; height: auto; display: block; }
     #cats-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
     .cat-item { position: absolute; display: flex; flex-direction: column; align-items: center; width: 100px; transform: translateX(-50%); }
+    .cat-img-wrap { position: relative; width: 100px; height: 100px; }
     .cat-img { width: 100px; height: 100px; background-repeat: no-repeat; background-position: center; background-size: contain; image-rendering: auto; transition: opacity 0.1s ease; }
+    .cat-decoration { position: absolute; top: 0; left: 0; width: 100px; height: 100px; pointer-events: none; z-index: 1; display: none; }
     @keyframes slide-in-from-left {
       from { transform: translateX(calc(-50% - 120vw)); }
       to   { transform: translateX(-50%); }
@@ -131,6 +141,7 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     .cat-label-wrap { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: url('${assetUri('label.png')}') no-repeat center / 100% 100%; padding: 4px 10px 6px; text-align: center; min-width: 80px; white-space: nowrap; }
     .cat-title { font-size: 10px; color: #333; text-align: center; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cat-status { font-size: 11px; color: #555; text-align: center; letter-spacing: 0.05em; }
+    .cat-notif-type { font-size: 10px; color: #000; text-align: center; white-space: nowrap; margin-top: 2px; min-height: 13px; }
     #sound-unlock-btn { position: fixed; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.45); border: none; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; z-index: 100; animation: sound-pulse 1.5s ease-in-out infinite; }
     @keyframes sound-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
   </style>
@@ -144,6 +155,7 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
   <div id="cats-container"></div>
   <script nonce="${nonce}">
     const IMAGE_MAP = ${JSON.stringify(imageUriMap)};
+    const DECO_MAP = ${JSON.stringify(decoMap)};
     const SPRITE_MAP = ${JSON.stringify(spriteMap)};
     let SOUND_ENABLED = ${soundEnabled};
     let SOUND_VOLUME = ${soundVolume};

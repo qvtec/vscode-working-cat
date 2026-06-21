@@ -12,6 +12,7 @@ export interface SessionStatus {
   title?: string;
   shellPid?: number;
   sessionId?: string;
+  notificationType?: string;
 }
 
 const SESSIONS_DIR = path.join(os.homedir(), '.claude-cat-sessions');
@@ -90,14 +91,14 @@ export class ClaudeWatcher extends EventEmitter {
         const filePath = path.join(SESSIONS_DIR, file);
         try {
           const raw = fs.readFileSync(filePath, 'utf-8');
-          const data = JSON.parse(raw) as { status: ClaudeStatus; timestamp: number; session: string; dir?: string; title?: string; shell_pid?: number; session_id?: string };
+          const data = JSON.parse(raw) as { status: ClaudeStatus; timestamp: number; session: string; dir?: string; title?: string; shell_pid?: number; session_id?: string; notification_type?: string };
           const ageMs = now - data.timestamp * 1000;
           const staleLimit = data.status === 'idle' ? 5 * 60 * 1000 : STALE_MS;
           if (ageMs > staleLimit) {
             fs.unlinkSync(filePath);
             continue;
           }
-          sessions.push({ id: data.session || file.replace('.json', ''), status: data.status, dir: data.dir, title: data.title, shellPid: data.shell_pid, sessionId: data.session_id });
+          sessions.push({ id: data.session || file.replace('.json', ''), status: data.status, dir: data.dir, title: data.title, shellPid: data.shell_pid, sessionId: data.session_id, notificationType: data.notification_type });
         } catch {
           // skip malformed files
         }

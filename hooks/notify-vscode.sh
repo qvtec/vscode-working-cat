@@ -14,8 +14,17 @@ data = json.load(sys.stdin)
 session_id = data.get('session_id', '')
 transcript_path = data.get('transcript_path', '')
 cwd = data.get('cwd', '')
+status_override = ''
 
 IS_MAC = platform.system() == 'Darwin'
+
+# For Notification hook (mapped to 'complete'), detect if Claude is waiting for approval/input
+# notification_type: permission_prompt = tool approval pending, idle_prompt = Claude asking user to proceed
+notification_type = data.get('notification_type', '')
+hook_event_name = data.get('hook_event_name', '')
+if '$STATUS' == 'complete':
+    if notification_type in ('permission_prompt', 'elicitation_dialog'):
+        status_override = 'permission'
 
 # Get title from transcript
 title = ''
@@ -109,12 +118,17 @@ if not shell_pid and cwd:
     except:
         pass
 
-print(session_id + '|' + title + '|' + shell_pid)
+print(session_id + '|' + title + '|' + shell_pid + '|' + status_override + '|' + notification_type + '|' + hook_event_name)
 " 2>/dev/null)
 
 SESSION_ID=$(echo "$RESULT" | cut -d'|' -f1)
 TITLE=$(echo "$RESULT" | cut -d'|' -f2)
 SHELL_PID=$(echo "$RESULT" | cut -d'|' -f3)
+STATUS_OVERRIDE=$(echo "$RESULT" | cut -d'|' -f4)
+NOTIFICATION_TYPE=$(echo "$RESULT" | cut -d'|' -f5)
+HOOK_EVENT=$(echo "$RESULT" | cut -d'|' -f6)
+# notification_type が空なら hook_event_name を表示ラベルとして使う
+TYPE_LABEL="${NOTIFICATION_TYPE:-$HOOK_EVENT}"
 FILE_KEY="${SESSION_ID:0:12}"
 
 if [ -z "$FILE_KEY" ]; then
@@ -133,5 +147,13 @@ else
   # SessionStart writes "idle" status (cat appears but not active yet)
   WRITE_STATUS="$STATUS"
   if [ "$STATUS" = "start" ]; then WRITE_STATUS="idle"; fi
-  echo "{\"status\":\"$WRITE_STATUS\",\"timestamp\":$(date +%s),\"session\":\"$FILE_KEY\",\"session_id\":\"$SESSION_ID\",\"dir\":\"$PWD\",\"title\":$TITLE_ESC,\"shell_pid\":$SHELL_PID_JSON}" > "$SESSIONS_DIR/$FILE_KEY.json"
+  # Apply status override from Notification message detection
+  if [ -n "$STATUS_OVERRIDE" ]; then WRITE_STATUS="$STATUS_OVERRIDE"; fi
+  # Don't overwrite "permission" status with "complete" when a real permission request is still pending
+  if [ "$WRITE_STATUS" = "complete" ] && [ -f "$SESSIONS_DIR/$FILE_KEY.json" ]; then
+    CURRENT=$(python3 -c "import sys,json; d=json.load(open('$SESSIONS_DIR/$FILE_KEY.json')); print(d.get('status',''))" 2>/dev/null)
+    CURRENT_TYPE=$(python3 -c "import sys,json; d=json.load(open('$SESSIONS_DIR/$FILE_KEY.json')); print(d.get('notification_type',''))" 2>/dev/null)
+    if [ "$CURRENT" = "permission" ] && [[ "$CURRENT_TYPE" == "permission_prompt" || "$CURRENT_TYPE" == "elicitation_dialog" ]]; then exit 0; fi
+  fi
+  echo "{\"status\":\"$WRITE_STATUS\",\"timestamp\":$(date +%s),\"session\":\"$FILE_KEY\",\"session_id\":\"$SESSION_ID\",\"dir\":\"$PWD\",\"title\":$TITLE_ESC,\"shell_pid\":$SHELL_PID_JSON,\"notification_type\":\"$TYPE_LABEL\"}" > "$SESSIONS_DIR/$FILE_KEY.json"
 fi

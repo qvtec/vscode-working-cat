@@ -32,12 +32,15 @@
     { left: 30, top: 46 },  // 左中間
     { left: 68, top: 44 },  // 右中間
     { left: 10, top: 34 },  // 左奥
-    { left: 82, top: 34 },  // 右奥
-    { left: 50, top: 32 },  // 中央奥
+    { left: 82, top: 24 },  // 右奥
+    { left: 50, top: 28 },  // 中央奥
   ];
 
+  const DECORATION_KEYS = ['glasses', 'ribbon', 'crown', 'flower', 'strawhat'];
+  const DECO_CHANCE = 0.15; // 15% でレアキャラ登場
+
   const LOCAL_ID = '__local__';
-  const cats = new Map(); // id -> { el, img, labelWrap, title, status, animTimer, labelTimer, state, dismissed, entering, pendingState }
+  const cats = new Map(); // id -> { el, img, imgWrap, decoration, decorationIndex, labelWrap, title, status, animTimer, labelTimer, state, dismissed, entering, pendingState }
   const LABEL_HIDE_STATES = new Set(['idle', 'sleeping', 'claude_idle', 'claude_thinking', 'typing']);
 
   // 背景画像の高さ比率を取得して猫の top% を補正する
@@ -59,7 +62,14 @@
   function assignSpot(id) {
     const used = new Set(usedSpots.values());
     const free = SPOTS.map((_, i) => i).filter(i => !used.has(i));
-    const index = free.length > 0 ? free[0] : spotCounter % SPOTS.length;
+    let index;
+    if (used.size === 0) {
+      index = 0;
+    } else if (free.length > 0) {
+      index = free[Math.floor(Math.random() * free.length)];
+    } else {
+      index = spotCounter % SPOTS.length;
+    }
     spotCounter++;
     usedSpots.set(id, index);
     return SPOTS[index];
@@ -77,8 +87,11 @@
       item.addEventListener('click', () => {
         const cat = cats.get(id);
         if (cat?.state === 'claude_complete') {
-          cat.dismissed = true;
+          cat.toggled = true;
           applyState(id, 'sleeping');
+        } else if (cat?.state === 'sleeping' && cat.toggled) {
+          cat.toggled = false;
+          applyState(id, 'claude_complete');
         }
         if (cat && LABEL_HIDE_STATES.has(cat.state)) {
           cat.labelWrap.style.display = '';
@@ -93,8 +106,17 @@
     }
 
     // div を使って background-image でフレームを切り替える
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'cat-img-wrap';
+
     const img = document.createElement('div');
     img.className = 'cat-img';
+
+    const decoEl = document.createElement('img');
+    decoEl.className = 'cat-decoration';
+
+    imgWrap.appendChild(img);
+    imgWrap.appendChild(decoEl);
 
     const labelWrap = document.createElement('div');
     labelWrap.className = 'cat-label-wrap';
@@ -107,11 +129,17 @@
 
     labelWrap.appendChild(title);
     labelWrap.appendChild(status);
-    item.appendChild(img);
+
+    const notifType = document.createElement('div');
+    notifType.className = 'cat-notif-type';
+    notifType.style.display = 'none';
+
+    item.appendChild(imgWrap);
     item.appendChild(labelWrap);
+    item.appendChild(notifType);
     container.appendChild(item);
 
-    const cat = { el: item, img, labelWrap, title, status, animTimer: null, labelTimer: null, soundTimers: [], state: null, dismissed: false, entering: false, pendingState: null };
+    const cat = { el: item, img, imgWrap, decoration: decoEl, labelWrap, title, status, notifType, animTimer: null, labelTimer: null, soundTimers: [], state: null, toggled: false, entering: false, pendingState: null };
     cats.set(id, cat);
     if (id === LOCAL_ID) title.textContent = 'editor';
     applyState(id, initialState);
@@ -144,9 +172,31 @@ function applyState(id, state) {
 
     clearSoundTimers(cat);
 
-    if (id !== LOCAL_ID && prevState !== 'typing') {
+    if (id !== LOCAL_ID) {
       if (state === 'claude_complete') {
-        playSound('energetic');
+        if (prevState !== 'sleeping') {
+          playSound('energetic');
+          if (Math.random() < DECO_CHANCE) {
+            const key = DECORATION_KEYS[Math.floor(Math.random() * DECORATION_KEYS.length)];
+            cat.decoration.src = DECO_MAP[key];
+            cat.decoration.style.top = '0px';
+            cat.decoration.style.left = '0px';
+            cat.decoration.style.transform = '';
+            cat.decoration.style.display = 'block';
+          } else {
+            cat.decoration.style.display = 'none';
+          }
+        } else {
+          cat.decoration.style.top = '0px';
+          cat.decoration.style.left = '0px';
+          cat.decoration.style.transform = '';
+        }
+      } else if (state === 'sleeping' && cat.toggled) {
+        if (cat.decoration.style.display === 'block') {
+          cat.decoration.style.top = '30px';
+          cat.decoration.style.left = '4px';
+          cat.decoration.style.transform = 'rotate(-32deg)';
+        }
       } else if (state === 'claude_idle') {
         playSound('hesitant');
       } else if (state === 'claude_permission') {
@@ -285,13 +335,19 @@ function applyState(id, state) {
             if (cat.entering) {
               cat.pendingState = state;
             } else {
-              if (state === 'claude_thinking') cat.dismissed = false;
-              if (cat.dismissed && state === 'claude_complete') state = 'sleeping';
+              if (state === 'claude_thinking') {
+                cat.toggled = false;
+                cat.decoration.style.display = 'none';
+              }
+              if (cat.toggled && state === 'claude_complete') state = 'sleeping';
               applyState(session.id, state);
             }
           }
           const cat = cats.get(session.id);
-          if (cat) cat.title.textContent = session.title || '';
+          if (cat) {
+            cat.title.textContent = session.title || '';
+            cat.notifType.textContent = session.notificationType || '';
+          }
         }
       }
     } else if (msg.type === 'setLocalState') {
