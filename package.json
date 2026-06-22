@@ -2,14 +2,24 @@
   "name": "vscode-working-cat",
   "displayName": "Working Cat for Claude Code",
   "description": "Monitor Claude Code sessions with an animated cat. Notifies you of AI status changes — thinking, complete, permission needed, or error.",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "publisher": "qvtec3",
   "icon": "assets/cat.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/qvtec/vscode-working-cat"
   },
-  "keywords": ["cat", "claude", "claude code", "ai", "activity", "notifier", "notification", "status", "fun"],
+  "keywords": [
+    "cat",
+    "claude",
+    "claude code",
+    "ai",
+    "activity",
+    "notifier",
+    "notification",
+    "status",
+    "fun"
+  ],
   "galleryBanner": {
     "color": "#1e1e2e",
     "theme": "dark"
@@ -17,8 +27,12 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other"],
-  "activationEvents": ["onStartupFinished"],
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
@@ -41,8 +55,14 @@
       "properties": {
         "workingCat.background": {
           "type": "string",
-          "enum": ["bg1", "bg2"],
-          "enumDescriptions": ["Japanese house", "Park garden"],
+          "enum": [
+            "bg1",
+            "bg2"
+          ],
+          "enumDescriptions": [
+            "Japanese house",
+            "Park garden"
+          ],
           "default": "bg2",
           "description": "Background scene"
         },
