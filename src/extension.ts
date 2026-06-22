@@ -117,20 +117,6 @@ export function activate(context: vscode.ExtensionContext): void {
   claudeWatcher.start();
   context.subscriptions.push({ dispose: () => claudeWatcher.stop() });
 
-  provider.on('catClicked', async (msg: { sessionId: string }) => {
-    const session = claudeSessions.find(s => s.id === msg.sessionId);
-
-    // Try to focus the terminal running this session by shell PID
-    if (session?.shellPid) {
-      for (const terminal of vscode.window.terminals) {
-        const pid = await terminal.processId;
-        if (pid === session.shellPid) {
-          terminal.show();
-          return;
-        }
-      }
-    }
-  });
 
   resetIdleTimer();
 }

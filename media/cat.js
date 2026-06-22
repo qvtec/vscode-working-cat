@@ -82,8 +82,6 @@
     const spot = id === LOCAL_ID ? SPOTS[0] : assignSpot(id);
     applySpot(item, spot);
     if (id !== LOCAL_ID) {
-      item.style.cursor = 'pointer';
-      item.title = 'Click to open session';
       item.addEventListener('click', () => {
         const cat = cats.get(id);
         if (cat?.state === 'claude_complete') {
@@ -101,7 +99,6 @@
             cat.labelTimer = null;
           }, 3000);
         }
-        vscode.postMessage({ type: 'catClicked', sessionId: id, title: cat?.title?.textContent });
       });
     }
 

@@ -37,11 +37,7 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
       ],
     };
     webviewView.webview.html = this.buildHtml(webviewView.webview);
-    webviewView.webview.onDidReceiveMessage(msg => {
-      if (msg.type === 'catClicked') {
-        this.emit('catClicked', msg);
-      }
-    });
+    webviewView.webview.onDidReceiveMessage(_msg => {});
     // webview が開かれたとき最新のセッション状態を再送
     setTimeout(() => this.setSessions(this.lastSessions), 100);
   }

@@ -1,66 +1,59 @@
-# Working Cat for Claude Code
+[![Working Cat Banner](assets/banner.png)](https://github.com/qvtec/vscode-working-cat)
 
-[日本語版はこちら](README.ja.md)
+<div align="center">
+
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/qvtec3.vscode-working-cat?label=VS%20Code%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat)
+[![License](https://img.shields.io/github/license/qvtec/vscode-working-cat?color=3fb950)](https://github.com/qvtec/vscode-working-cat/blob/main/LICENSE)
+
+[📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat) • [🐛 Issues](https://github.com/qvtec/vscode-working-cat/issues) • [📋 Changelog](https://github.com/qvtec/vscode-working-cat/blob/main/CHANGELOG.md) • [🇯🇵 日本語](README.ja.md)
+
+</div>
 
 A cat lives in your VS Code sidebar and reacts to your coding activity — and to your Claude Code sessions.
 
-![Working Cat demo](https://raw.githubusercontent.com/qvtec/vscode-working-cat/main/assets/demo.gif)
+<table><tr>
+<td><img src="assets/demo.gif" width="300" /></td>
+<td><img src="assets/demo2.png" width="300" /></td>
+</tr></table>
 
 ## Features
 
-- Cat animations react to editor activity (typing, saving, errors, idle)
-- Each active Claude Code session gets its own cat with a walking entrance animation
-- Multiple cats can appear at once for multiple concurrent sessions
-- Click a cat to focus the terminal running that Claude session
-- Session title displayed under each cat
-- Cat sounds on key events (toggleable, with volume control)
-- Background scene selection
+- **Editor cat** — animates on typing, saving, errors, and idle
+- **Claude Code cats** — each active session gets its own cat with a walking entrance animation
+- **Multi-session support** — multiple cats appear at once for concurrent Claude sessions
+- **Session titles** — displayed each Claude cat
+- **Cat sounds** — meows on key events, toggleable with volume control
+- **Background scenes** — choose your backdrop
 
 ## Requirements
 
-- Linux or macOS
+- **Platform**: Windows, macOS, or Linux (including WSL2)
+- **VS Code**: 1.70.0 or later
 - [Claude Code](https://claude.ai/code) (for Claude session tracking)
+
+## Getting Started
+
+1. Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat)
+2. Open the **Working Cat** panel in the sidebar
+3. Start coding — the cat reacts automatically
+4. Launch a Claude Code session to see Claude cats appear
 
 ## Claude Code Integration
 
-On first activation, Working Cat automatically registers hooks in `~/.claude/settings.json` to track your Claude Code sessions in real time.
+On first activation, Working Cat automatically registers hooks in `~/.claude/settings.json` to track your Claude Code sessions in real time. Back up your config if you have custom hooks.
 
 To remove the hooks:
 ```
 Working Cat: Unregister Claude Code Hooks
 ```
 
-## Cat States
+## What the cat reacts to
 
-### Editor cat
+**Editor activity** — typing, saving, diagnostics errors, and idle time.
 
-| State | Meaning |
-|-------|---------|
-| idle | No activity |
-| typing... | Editing a file |
-| saved! | File just saved |
-| error! | Diagnostics errors detected |
-| zzz... | Idle for 5+ minutes |
+**Claude Code sessions** — session start, waiting for input, thinking, done, and permission requests.
 
-### Claude Code cats
-
-| State | Meaning |
-|-------|---------|
-| (walking in) | New session started — cat runs in from the side |
-| (looking around) | Waiting for your input |
-| thinking... | Claude is generating a response |
-| done! | Claude finished — click to dismiss |
-| waiting... | Claude is waiting for your permission |
-
-## Cat Sounds
-
-A 🔊 button appears in the top-right corner on startup — click it once to enable audio (required by browser autoplay policy).
-
-| Event | Sound |
-|-------|-------|
-| Waiting for input | Hesitant meow × 1 |
-| done! | Energetic meow × 1 |
-| Permission request | Calm meow × 1 |
+**Sounds** — the cat meows on key events.
 
 ## Settings
 
@@ -70,7 +63,3 @@ A 🔊 button appears in the top-right corner on startup — click it once to en
 | `workingCat.sound` | `true` | Enable/disable cat sounds |
 | `workingCat.volume` | `0.5` | Sound volume (0.0 – 1.0) |
 
-## Known Issues
-
-- Terminal focus on click only works when Claude is running in a VS Code integrated terminal.
-- Hook registration modifies `~/.claude/settings.json`. Back up your config if you have custom hooks.
