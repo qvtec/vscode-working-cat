@@ -22,7 +22,9 @@ A cat lives in your VS Code sidebar and reacts to your coding activity — and t
 - **Claude Code cats** — each active session gets its own cat with a walking entrance animation
 - **Multi-session support** — multiple cats appear at once for concurrent Claude sessions
 - **Session titles** — displayed each Claude cat
+- **Draggable cats** — drag any cat to reposition it freely
 - **Cat sounds** — meows on key events, toggleable with volume control
+- **Snooze reminders** — plays a sound at set intervals while waiting for permission
 - **Background scenes** — choose your backdrop
 
 ## Requirements
@@ -62,4 +64,7 @@ Working Cat: Unregister Claude Code Hooks
 | `workingCat.background` | `bg2` | Background scene (`bg1`: Japanese house, `bg2`: park garden) |
 | `workingCat.sound` | `true` | Enable/disable cat sounds |
 | `workingCat.volume` | `0.5` | Sound volume (0.0 – 1.0) |
+| `workingCat.snooze` | `false` | Play reminder sounds when waiting for permission |
+| `workingCat.snoozeInterval` | `30` | Snooze interval in seconds (10–300) |
+| `workingCat.snoozeCount` | `3` | Number of snooze reminders (1–10) |
 

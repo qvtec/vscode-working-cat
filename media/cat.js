@@ -40,7 +40,7 @@
   const DECO_CHANCE = 0.15; // 15% でレアキャラ登場
 
   const LOCAL_ID = '__local__';
-  const cats = new Map(); // id -> { el, img, imgWrap, decoration, decorationIndex, labelWrap, title, status, animTimer, labelTimer, state, dismissed, entering, pendingState }
+  const cats = new Map(); // id -> { el, img, imgWrap, decoration, decorationIndex, labelWrap, title, status, animTimer, labelTimer, snoozeTimers, state, dismissed, entering, pendingState }
   const LABEL_HIDE_STATES = new Set(['idle', 'sleeping', 'claude_idle', 'claude_thinking', 'typing']);
 
   // 背景画像の高さ比率を取得して猫の top% を補正する
@@ -51,10 +51,25 @@
     return rendered.height / window.innerHeight;
   }
 
-  function applySpot(item, spot) {
+  // CSS top% から遠近スケールを計算（手前=1.0, 奥=0.62）
+  function calcScale(cssTopPercent) {
+    const ratio = getBgRatio() || 1;
+    const rawTop = cssTopPercent / ratio;
+    const t = Math.max(0, Math.min(1, (rawTop - 24) / (62 - 24)));
+    return 0.62 + t * 0.38;
+  }
+
+  function applySpot(el, imgWrap, spot) {
     const ratio = getBgRatio();
-    item.style.left = spot.left + '%';
-    item.style.top = (spot.top * ratio) + '%';
+    el.style.left = spot.left + '%';
+    const cssTop = spot.top * ratio;
+    el.style.top = cssTop + '%';
+    const scale = calcScale(cssTop);
+    imgWrap.style.transform = `scale(${scale.toFixed(3)})`;
+    imgWrap.style.transformOrigin = 'bottom center';
+    el.style.zIndex = Math.round(scale * 10).toString();
+    const labelWrap = el.querySelector('.cat-label-wrap');
+    if (labelWrap) labelWrap.style.bottom = Math.round(100 * scale) + 'px';
   }
   const usedSpots = new Map(); // id -> spotIndex
   let spotCounter = 0;
@@ -80,27 +95,80 @@
     item.className = 'cat-item';
 
     const spot = id === LOCAL_ID ? SPOTS[0] : assignSpot(id);
-    applySpot(item, spot);
-    if (id !== LOCAL_ID) {
-      item.addEventListener('click', () => {
-        const cat = cats.get(id);
-        if (cat?.state === 'claude_complete') {
-          cat.toggled = true;
-          applyState(id, 'sleeping');
-        } else if (cat?.state === 'sleeping' && cat.toggled) {
-          cat.toggled = false;
-          applyState(id, 'claude_complete');
+    item.style.cursor = 'grab';
+
+    item.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const startX = e.clientX;
+      const startY = e.clientY;
+      const startLeft = parseFloat(item.style.left);
+      const startTop = parseFloat(item.style.top);
+      let moved = false;
+      item.style.cursor = 'grabbing';
+      item.style.zIndex = '10';
+
+      function onMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) moved = true;
+        if (moved) {
+          const cw = container.offsetWidth;
+          const ch = container.offsetHeight;
+          const newLeft = Math.max(0, Math.min(100, startLeft + dx / cw * 100));
+          const newTop  = Math.max(0, Math.min(100, startTop  + dy / ch * 100));
+          item.style.left = newLeft + '%';
+          item.style.top  = newTop + '%';
+          const cat = cats.get(id);
+          if (cat) {
+            const scale = calcScale(newTop);
+            cat.imgWrap.style.transform = `scale(${scale.toFixed(3)})`;
+            cat.labelWrap.style.bottom = Math.round(100 * scale) + 'px';
+          }
         }
-        if (cat && LABEL_HIDE_STATES.has(cat.state)) {
-          cat.labelWrap.style.display = '';
-          clearTimeout(cat.labelTimer);
-          cat.labelTimer = setTimeout(() => {
-            if (LABEL_HIDE_STATES.has(cat.state)) cat.labelWrap.style.display = 'none';
-            cat.labelTimer = null;
-          }, 3000);
+      }
+
+      function onUp() {
+        item.style.cursor = 'grab';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+
+        if (moved) {
+          const cat = cats.get(id);
+          if (cat) {
+            const finalTop = parseFloat(item.style.top);
+            const scale = calcScale(finalTop);
+            cat.imgWrap.style.transform = `scale(${scale.toFixed(3)})`;
+            item.style.zIndex = Math.round(scale * 10).toString();
+            cat.labelWrap.style.bottom = Math.round(100 * scale) + 'px';
+            cat.customPos = { left: parseFloat(item.style.left), top: finalTop };
+          }
+        } else {
+          item.style.zIndex = '';
         }
-      });
-    }
+        if (!moved && id !== LOCAL_ID) {
+          const cat = cats.get(id);
+          if (cat?.state === 'claude_complete') {
+            cat.toggled = true;
+            applyState(id, 'sleeping');
+          } else if (cat?.state === 'sleeping' && cat.toggled) {
+            cat.toggled = false;
+            applyState(id, 'claude_complete');
+          }
+          if (cat && LABEL_HIDE_STATES.has(cat.state)) {
+            cat.labelWrap.style.display = '';
+            clearTimeout(cat.labelTimer);
+            cat.labelTimer = setTimeout(() => {
+              if (LABEL_HIDE_STATES.has(cat.state)) cat.labelWrap.style.display = 'none';
+              cat.labelTimer = null;
+            }, 3000);
+          }
+        }
+      }
+
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
 
     // div を使って background-image でフレームを切り替える
     const imgWrap = document.createElement('div');
@@ -136,8 +204,9 @@
     item.appendChild(notifType);
     container.appendChild(item);
 
-    const cat = { el: item, img, imgWrap, decoration: decoEl, labelWrap, title, status, notifType, animTimer: null, labelTimer: null, soundTimers: [], state: null, toggled: false, entering: false, pendingState: null };
+    const cat = { el: item, img, imgWrap, decoration: decoEl, labelWrap, title, status, notifType, animTimer: null, labelTimer: null, soundTimers: [], snoozeTimers: [], state: null, toggled: false, entering: false, pendingState: null, customPos: null };
     cats.set(id, cat);
+    applySpot(item, imgWrap, spot);
     if (id === LOCAL_ID) title.textContent = 'editor';
     applyState(id, initialState);
     return cat;
@@ -149,6 +218,7 @@
     clearInterval(cat.animTimer);
     clearTimeout(cat.labelTimer);
     clearSoundTimers(cat);
+    clearSnoozeTimers(cat);
     cat.el.remove();
     cats.delete(id);
     usedSpots.delete(id);
@@ -159,6 +229,22 @@
     cat.soundTimers = [];
   }
 
+  function clearSnoozeTimers(cat) {
+    cat.snoozeTimers.forEach(t => clearTimeout(t));
+    cat.snoozeTimers = [];
+  }
+
+  function scheduleSnooze(id, cat, remaining) {
+    if (remaining <= 0) return;
+    const t = setTimeout(() => {
+      const c = cats.get(id);
+      if (!c || c.state !== 'claude_permission') return;
+      playSound('calm');
+      scheduleSnooze(id, c, remaining - 1);
+    }, SNOOZE_INTERVAL * 1000);
+    cat.snoozeTimers.push(t);
+  }
+
 function applyState(id, state) {
     const cat = cats.get(id);
     if (!cat) return;
@@ -166,8 +252,10 @@ function applyState(id, state) {
     if (cat.state === state) return;
     const prevState = cat.state;
     cat.state = state;
+    cat.el.classList.toggle('workflow-done', state === 'claude_complete' || state === 'sleeping');
 
     clearSoundTimers(cat);
+    clearSnoozeTimers(cat);
 
     if (id !== LOCAL_ID) {
       if (state === 'claude_complete') {
@@ -235,6 +323,10 @@ function applyState(id, state) {
         }, interval);
       }
     }
+
+    if (state === 'claude_permission' && SNOOZE_ENABLED && SNOOZE_COUNT > 0) {
+      scheduleSnooze(id, cat, SNOOZE_COUNT);
+    }
   }
 
   let audioUnlocked = false;
@@ -274,8 +366,16 @@ function applyState(id, state) {
 
   function reapplySpots() {
     for (const [id, cat] of cats) {
-      const spot = id === LOCAL_ID ? SPOTS[0] : (SPOTS[usedSpots.get(id)] ?? SPOTS[0]);
-      applySpot(cat.el, spot);
+      if (cat.customPos) {
+        cat.el.style.left = cat.customPos.left + '%';
+        cat.el.style.top  = cat.customPos.top  + '%';
+        const scale = calcScale(cat.customPos.top);
+        cat.imgWrap.style.transform = `scale(${scale.toFixed(3)})`;
+        cat.el.style.zIndex = Math.round(scale * 10).toString();
+      } else {
+        const spot = id === LOCAL_ID ? SPOTS[0] : (SPOTS[usedSpots.get(id)] ?? SPOTS[0]);
+        applySpot(cat.el, cat.imgWrap, spot);
+      }
     }
   }
 
@@ -288,6 +388,9 @@ function applyState(id, state) {
     if (msg.type === 'setSessions') {
       const sessions = msg.sessions;
 
+      const catsContainer = document.getElementById('cats-container');
+      const hasSubagent = sessions.some(s => s.shellPid == null && s.status !== 'idle');
+      if (catsContainer) catsContainer.classList.toggle('workflow', hasSubagent);
 
       if (sessions.length === 0) {
         for (const id of [...cats.keys()]) {
@@ -360,6 +463,10 @@ function applyState(id, state) {
       if (btn) btn.style.display = (msg.enabled && !audioUnlocked) ? '' : 'none';
     } else if (msg.type === 'setSoundVolume') {
       SOUND_VOLUME = msg.volume;
+    } else if (msg.type === 'setSnoozeConfig') {
+      SNOOZE_ENABLED = msg.enabled;
+      SNOOZE_INTERVAL = msg.interval;
+      SNOOZE_COUNT = msg.count;
     }
   });
 })();

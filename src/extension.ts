@@ -105,6 +105,16 @@ export function activate(context: vscode.ExtensionContext): void {
         const volume = vscode.workspace.getConfiguration('workingCat').get<number>('volume', 0.5);
         provider.setSoundVolume(volume);
       }
+      if (e.affectsConfiguration('workingCat.snooze') ||
+          e.affectsConfiguration('workingCat.snoozeInterval') ||
+          e.affectsConfiguration('workingCat.snoozeCount')) {
+        const cfg = vscode.workspace.getConfiguration('workingCat');
+        provider.setSnoozeConfig(
+          cfg.get<boolean>('snooze', false),
+          cfg.get<number>('snoozeInterval', 30),
+          cfg.get<number>('snoozeCount', 3)
+        );
+      }
     })
   );
 

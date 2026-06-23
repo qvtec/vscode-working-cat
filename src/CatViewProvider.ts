@@ -59,6 +59,10 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     this.view?.webview.postMessage({ type: 'setSoundVolume', volume });
   }
 
+  setSnoozeConfig(enabled: boolean, interval: number, count: number): void {
+    this.view?.webview.postMessage({ type: 'setSnoozeConfig', enabled, interval, count });
+  }
+
   refreshBackground(): void {
     if (!this.view) return;
     const uri = this.view.webview.asWebviewUri(
@@ -77,6 +81,9 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     const nonce = getNonce();
     const soundEnabled = vscode.workspace.getConfiguration('workingCat').get<boolean>('sound', true);
     const soundVolume = vscode.workspace.getConfiguration('workingCat').get<number>('volume', 0.5);
+    const snoozeEnabled = vscode.workspace.getConfiguration('workingCat').get<boolean>('snooze', false);
+    const snoozeInterval = vscode.workspace.getConfiguration('workingCat').get<number>('snoozeInterval', 30);
+    const snoozeCount = vscode.workspace.getConfiguration('workingCat').get<number>('snoozeCount', 3);
 
     // Each state has one or more patterns (arrays of frames).
     // cat.js picks one pattern at random when entering the state.
@@ -118,9 +125,12 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { margin: 0; padding: 0; overflow: hidden; background: #000; }
     #bg { width: 100%; height: auto; display: block; }
-    #cats-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    #cats-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
     .cat-item { position: absolute; display: flex; flex-direction: column; align-items: center; width: 100px; transform: translateX(-50%); }
-    .cat-img-wrap { position: relative; width: 100px; height: 100px; }
+    .cat-img-wrap { position: relative; width: 100px; height: 100px; isolation: isolate; }
+    #cats-container.workflow .cat-img-wrap::before { content: ''; position: absolute; inset: -12px; border-radius: 50%; background: radial-gradient(circle, rgba(150, 80, 255, 0.55) 0%, transparent 70%); pointer-events: none; z-index: -1; animation: workflow-glow 2.5s ease-in-out infinite; }
+    #cats-container.workflow .cat-item.workflow-done .cat-img-wrap::before { animation: none; opacity: 0.2; }
+    @keyframes workflow-glow { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
     .cat-img { width: 100px; height: 100px; background-repeat: no-repeat; background-position: center; background-size: contain; image-rendering: auto; transition: opacity 0.1s ease; }
     .cat-decoration { position: absolute; top: 0; left: 0; width: 100px; height: 100px; pointer-events: none; z-index: 1; display: none; }
     @keyframes slide-in-from-left {
@@ -155,6 +165,9 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     const SPRITE_MAP = ${JSON.stringify(spriteMap)};
     let SOUND_ENABLED = ${soundEnabled};
     let SOUND_VOLUME = ${soundVolume};
+    let SNOOZE_ENABLED = ${snoozeEnabled};
+    let SNOOZE_INTERVAL = ${snoozeInterval};
+    let SNOOZE_COUNT = ${snoozeCount};
     const vscode = acquireVsCodeApi();
   </script>
   <script nonce="${nonce}" src="${mediaUri('cat.js')}"></script>

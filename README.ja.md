@@ -9,7 +9,7 @@
 
 </div>
 
-VS Code のサイドバーに猫が住んでいます。あなたのコーディング活動や Claude Code セッションに反応してアニメーションします。
+VS Code のサイドバーで猫が飼えます。ファイル編集や Claude Code セッションに反応してアニメーションします。
 
 <table><tr>
 <td><img src="assets/demo.gif" width="300" /></td>
@@ -22,7 +22,9 @@ VS Code のサイドバーに猫が住んでいます。あなたのコーディ
 - **Claude Code 猫** — セッションが起動するたびに猫が横から走り込んで登場
 - **複数セッション対応** — セッションごとに1匹、同時表示可能
 - **セッションタイトル表示** — 各猫にセッション名を表示
+- **ドラッグ移動** — 猫をドラッグして自由な位置に配置できる
 - **鳴き声** — イベントに合わせてにゃーと鳴く（ON/OFF・音量調整可）
+- **スヌーズ通知** — パーミッション待ち中に一定間隔で鳴き声でお知らせ
 - **背景シーン選択** — お好みの背景を選べる
 
 ## 動作環境
@@ -62,4 +64,7 @@ Working Cat: Unregister Claude Code Hooks
 | `workingCat.background` | `bg2` | 背景シーン（`bg1`: 日本の家、`bg2`: 公園） |
 | `workingCat.sound` | `true` | 鳴き声のON/OFF |
 | `workingCat.volume` | `0.5` | 鳴き声の音量（0.0 〜 1.0） |
+| `workingCat.snooze` | `false` | パーミッション待ち時のスヌーズ通知のON/OFF |
+| `workingCat.snoozeInterval` | `30` | スヌーズ間隔（秒）（10〜300） |
+| `workingCat.snoozeCount` | `3` | スヌーズの回数（1〜10） |
 

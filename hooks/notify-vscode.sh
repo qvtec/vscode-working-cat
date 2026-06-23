@@ -150,7 +150,7 @@ else
   # Apply status override from Notification message detection
   if [ -n "$STATUS_OVERRIDE" ]; then WRITE_STATUS="$STATUS_OVERRIDE"; fi
   # Don't overwrite "permission" status with "complete" when a real permission request is still pending
-  if [ "$WRITE_STATUS" = "complete" ] && [ -f "$SESSIONS_DIR/$FILE_KEY.json" ]; then
+  if [ "$WRITE_STATUS" = "complete" ] && [ "$HOOK_EVENT" != "Stop" ] && [ -f "$SESSIONS_DIR/$FILE_KEY.json" ]; then
     CURRENT=$(python3 -c "import sys,json; d=json.load(open('$SESSIONS_DIR/$FILE_KEY.json')); print(d.get('status',''))" 2>/dev/null)
     CURRENT_TYPE=$(python3 -c "import sys,json; d=json.load(open('$SESSIONS_DIR/$FILE_KEY.json')); print(d.get('notification_type',''))" 2>/dev/null)
     if [ "$CURRENT" = "permission" ] && [[ "$CURRENT_TYPE" == "permission_prompt" || "$CURRENT_TYPE" == "elicitation_dialog" ]]; then exit 0; fi
