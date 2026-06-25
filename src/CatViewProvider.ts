@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import type { SessionStatus } from './ClaudeWatcher';
 
 function getBgFile(): string {
-  const bg = vscode.workspace.getConfiguration('workingCat').get<string>('background', 'bg2');
+  const bg = vscode.workspace.getConfiguration('workingCat').get<string>('background', 'bg_park');
   return `${bg}.webp`;
 }
 
@@ -131,6 +131,12 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     #cats-container.workflow .cat-img-wrap::before { content: ''; position: absolute; inset: -12px; border-radius: 50%; background: radial-gradient(circle, rgba(150, 80, 255, 0.55) 0%, transparent 70%); pointer-events: none; z-index: -1; animation: workflow-glow 2.5s ease-in-out infinite; }
     #cats-container.workflow .cat-item.workflow-done .cat-img-wrap::before { animation: none; opacity: 0.2; }
     @keyframes workflow-glow { 0%,100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.15); } }
+    .cat-item.snooze-ring-2 .cat-img-wrap::after,
+    .cat-item.snooze-ring-3 .cat-img-wrap::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; z-index: -1; animation: snooze-pulse 1.8s ease-in-out infinite; }
+    .cat-item.snooze-ring-1 .cat-img-wrap::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; z-index: -1; inset: -8px; background: radial-gradient(circle, rgba(255,160,0,0.3) 0%, transparent 70%); filter: blur(5px); }
+    .cat-item.snooze-ring-2 .cat-img-wrap::after { inset: -14px; background: radial-gradient(circle, rgba(255,110,0,0.45) 0%, transparent 70%); filter: blur(6px); }
+    .cat-item.snooze-ring-3 .cat-img-wrap::after { inset: -22px; background: radial-gradient(circle, rgba(255,50,0,0.6) 0%, transparent 70%); filter: blur(9px); }
+    @keyframes snooze-pulse { 0%,100% { opacity: 0.55; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.12); } }
     .cat-img { width: 100px; height: 100px; background-repeat: no-repeat; background-position: center; background-size: contain; image-rendering: auto; transition: opacity 0.1s ease; }
     .cat-decoration { position: absolute; top: 0; left: 0; width: 100px; height: 100px; pointer-events: none; z-index: 1; display: none; }
     @keyframes slide-in-from-left {

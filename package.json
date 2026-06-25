@@ -2,7 +2,7 @@
   "name": "vscode-working-cat",
   "displayName": "Working Cat for Claude Code",
   "description": "Monitor Claude Code sessions with an animated cat. Notifies you of AI status changes — thinking, complete, permission needed, or error.",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "publisher": "qvtec3",
   "icon": "assets/cat.png",
   "repository": {
@@ -56,14 +56,20 @@
         "workingCat.background": {
           "type": "string",
           "enum": [
-            "bg1",
-            "bg2"
+            "bg_park",
+            "bg_park_evening",
+            "bg_park_night",
+            "bg_home",
+            "bg_cyberpunk"
           ],
           "enumDescriptions": [
+            "Park garden",
+            "Park garden evening",
+            "Park garden night",
             "Japanese house",
-            "Park garden"
+            "Cyberpunk city"
           ],
-          "default": "bg2",
+          "default": "bg_park",
           "description": "Background scene"
         },
         "workingCat.sound": {

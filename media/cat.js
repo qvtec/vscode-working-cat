@@ -232,6 +232,7 @@
   function clearSnoozeTimers(cat) {
     cat.snoozeTimers.forEach(t => clearTimeout(t));
     cat.snoozeTimers = [];
+    cat.el.classList.remove('snooze-ring-1', 'snooze-ring-2', 'snooze-ring-3');
   }
 
   function scheduleSnooze(id, cat, remaining) {
@@ -240,6 +241,9 @@
       const c = cats.get(id);
       if (!c || c.state !== 'claude_permission') return;
       playSound('calm');
+      const ring = SNOOZE_COUNT - remaining + 1;
+      c.el.classList.remove('snooze-ring-1', 'snooze-ring-2', 'snooze-ring-3');
+      c.el.classList.add(`snooze-ring-${Math.min(ring, 3)}`);
       scheduleSnooze(id, c, remaining - 1);
     }, SNOOZE_INTERVAL * 1000);
     cat.snoozeTimers.push(t);

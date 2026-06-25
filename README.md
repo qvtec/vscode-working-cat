@@ -2,8 +2,10 @@
 
 <div align="center">
 
-[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/qvtec3.vscode-working-cat?label=VS%20Code%20Marketplace&color=0078d7)](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat)
-[![License](https://img.shields.io/github/license/qvtec/vscode-working-cat?color=3fb950)](https://github.com/qvtec/vscode-working-cat/blob/main/LICENSE)
+[![Version](https://badgen.net/vs-marketplace/v/qvtec3.vscode-working-cat)](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat)
+[![License](https://img.shields.io/github/license/qvtec/swagger-php-annotation?style=flat)](https://github.com/qvtec/swagger-php-annotation/blob/main/LICENSE)
+<!-- [![Installs](https://badgen.net/vs-marketplace/i/qvtec3.swagger-php-annotation)](https://marketplace.visualstudio.com/items?itemName=qvtec3.swagger-php-annotation)
+[![Stars](https://img.shields.io/github/stars/qvtec/swagger-php-annotation?style=flat)](https://github.com/qvtec/swagger-php-annotation/stargazers) -->
 
 [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat) • [🐛 Issues](https://github.com/qvtec/vscode-working-cat/issues) • [📋 Changelog](https://github.com/qvtec/vscode-working-cat/blob/main/CHANGELOG.md) • [🇯🇵 日本語](README.ja.md)
 
@@ -61,7 +63,7 @@ Working Cat: Unregister Claude Code Hooks
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `workingCat.background` | `bg2` | Background scene (`bg1`: Japanese house, `bg2`: park garden) |
+| `workingCat.background` | `bg_park` | Background scene (`bg_park`: park garden, `bg_park_evening`: park evening, `bg_park_night`: park night, `bg_home`: Japanese house, `bg_cyberpunk`: cyberpunk city) |
 | `workingCat.sound` | `true` | Enable/disable cat sounds |
 | `workingCat.volume` | `0.5` | Sound volume (0.0 – 1.0) |
 | `workingCat.snooze` | `false` | Play reminder sounds when waiting for permission |
