@@ -9,6 +9,7 @@ const HOOK_EVENTS: [string, string][] = [
   ['SessionStart', 'start'],
   ['UserPromptSubmit', 'thinking'],
   ['PreToolUse', 'thinking'],
+  ['PostToolUse', 'thinking'],
   ['PostToolUseFailure', 'error'],
   ['Stop', 'complete'],
   ['Notification', 'complete'],
