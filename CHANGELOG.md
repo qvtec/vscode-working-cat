@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1
+
+- Added PostToolUse hook event mapping (thinking state)
+
+## 1.2.0
+
+- New background scenes (park evening, park night, Japanese house, cyberpunk city)
+- Snooze glow effect while waiting for permission
+
 ## 1.1.0
 
 - Draggable cats — drag any cat to reposition it freely

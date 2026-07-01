@@ -2,7 +2,7 @@
   "name": "vscode-working-cat",
   "displayName": "Working Cat for Claude Code",
   "description": "Monitor Claude Code sessions with an animated cat. Notifies you of AI status changes — thinking, complete, permission needed, or error.",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "qvtec3",
   "icon": "assets/cat.png",
   "repository": {
