@@ -2,7 +2,7 @@
   "name": "vscode-working-cat",
   "displayName": "Working Cat for Claude Code",
   "description": "Monitor Claude Code sessions with an animated cat. Notifies you of AI status changes — thinking, complete, permission needed, or error.",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "publisher": "qvtec3",
   "icon": "assets/cat.png",
   "repository": {
@@ -10,14 +10,17 @@
     "url": "https://github.com/qvtec/vscode-working-cat"
   },
   "keywords": [
-    "cat",
-    "claude",
     "claude code",
-    "ai",
-    "activity",
-    "notifier",
+    "claude-code",
+    "claude",
     "notification",
+    "notifier",
+    "permission",
+    "agent",
+    "ai",
     "status",
+    "cat",
+    "activity",
     "fun"
   ],
   "galleryBanner": {
@@ -28,6 +31,7 @@
     "vscode": "^1.85.0"
   },
   "categories": [
+    "Visualization",
     "Other"
   ],
   "activationEvents": [

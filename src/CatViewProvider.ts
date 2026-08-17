@@ -17,13 +17,22 @@ export type CatState =
   | 'claude_complete'
   | 'claude_permission';
 
+const NAMES_KEY = 'workingCat.sessionNames';
+const LOCAL_ID = '__local__';
+// セッションが連続でこの回数だけ消えていたら名前を破棄する（一時的な読み取り失敗で消さないため）
+const PRUNE_AFTER_MISSES = 5;
+
 export class CatViewProvider extends EventEmitter implements vscode.WebviewViewProvider {
   public static readonly viewType = 'workingCat.catView';
 
   private view?: vscode.WebviewView;
   private lastSessions: SessionStatus[] = [];
+  private missCounts = new Map<string, number>();
 
-  constructor(private readonly extensionUri: vscode.Uri) {
+  constructor(
+    private readonly extensionUri: vscode.Uri,
+    private readonly memento: vscode.Memento
+  ) {
     super();
   }
 
@@ -37,13 +46,60 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
       ],
     };
     webviewView.webview.html = this.buildHtml(webviewView.webview);
-    webviewView.webview.onDidReceiveMessage(_msg => {});
+    webviewView.webview.onDidReceiveMessage(msg => {
+      if (msg?.type === 'renameSession' && typeof msg.id === 'string') {
+        this.renameSession(msg.id, typeof msg.name === 'string' ? msg.name : '');
+      }
+    });
     // webview が開かれたとき最新のセッション状態を再送
     setTimeout(() => this.setSessions(this.lastSessions), 100);
   }
 
+  private getNames(): Record<string, string> {
+    return this.memento.get<Record<string, string>>(NAMES_KEY, {});
+  }
+
+  /** ユーザーが付けたセッション名を保存する（空文字なら削除して元のタイトルに戻す） */
+  private renameSession(id: string, name: string): void {
+    const names = { ...this.getNames() };
+    const trimmed = name.trim().slice(0, 60);
+    if (trimmed) {
+      names[id] = trimmed;
+    } else {
+      delete names[id];
+    }
+    this.memento.update(NAMES_KEY, names);
+  }
+
+  /** 終了したセッションの名前は破棄する（ローカル猫の名前は残す） */
+  private pruneNames(sessions: SessionStatus[]): void {
+    const alive = new Set(sessions.map(s => s.id));
+    const names = this.getNames();
+    const next: Record<string, string> = {};
+    let changed = false;
+
+    for (const [id, name] of Object.entries(names)) {
+      if (id === LOCAL_ID || alive.has(id)) {
+        this.missCounts.delete(id);
+        next[id] = name;
+        continue;
+      }
+      const misses = (this.missCounts.get(id) ?? 0) + 1;
+      if (misses < PRUNE_AFTER_MISSES) {
+        this.missCounts.set(id, misses);
+        next[id] = name;
+      } else {
+        this.missCounts.delete(id);
+        changed = true;
+      }
+    }
+
+    if (changed) this.memento.update(NAMES_KEY, next);
+  }
+
   setSessions(sessions: SessionStatus[]): void {
     this.lastSessions = sessions;
+    this.pruneNames(sessions);
     this.view?.webview.postMessage({ type: 'setSessions', sessions });
   }
 
@@ -151,8 +207,12 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     .cat-item.cat-entering-right { animation: slide-in-from-right 2s ease-out; }
     .cat-img.cat-flip { transform: scaleX(-1); }
     .cat-label-wrap { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: url('${assetUri('label.png')}') no-repeat center / 100% 100%; padding: 4px 10px 6px; text-align: center; min-width: 80px; white-space: nowrap; }
-    .cat-title { font-size: 10px; color: #333; text-align: center; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cat-status { font-size: 11px; color: #555; text-align: center; letter-spacing: 0.05em; }
+    .cat-name { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); max-width: 130px; padding: 1px 5px; border-radius: 4px; font-size: 10px; line-height: 1.4; color: #fff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 4px rgba(0,0,0,0.8); cursor: text; z-index: 20; }
+    .cat-name:hover { background: rgba(0,0,0,0.55); }
+    .cat-name:empty::before { content: '＋'; opacity: 0.55; }
+    .cat-name[data-editing="1"] { max-width: none; padding: 0; overflow: visible; background: none; }
+    .cat-name-input { width: 120px; padding: 1px 3px; border: 1px solid rgba(255,255,255,0.7); border-radius: 4px; background: rgba(0,0,0,0.8); color: #fff; font: inherit; font-size: 10px; text-align: center; outline: none; }
     .cat-notif-type { font-size: 10px; color: #000; text-align: center; white-space: nowrap; margin-top: 2px; min-height: 13px; }
     #sound-unlock-btn { position: fixed; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.45); border: none; cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; z-index: 100; animation: sound-pulse 1.5s ease-in-out infinite; }
     @keyframes sound-pulse { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
@@ -174,6 +234,7 @@ export class CatViewProvider extends EventEmitter implements vscode.WebviewViewP
     let SNOOZE_ENABLED = ${snoozeEnabled};
     let SNOOZE_INTERVAL = ${snoozeInterval};
     let SNOOZE_COUNT = ${snoozeCount};
+    const NAME_OVERRIDES = ${JSON.stringify(this.getNames())};
     const vscode = acquireVsCodeApi();
   </script>
   <script nonce="${nonce}" src="${mediaUri('cat.js')}"></script>

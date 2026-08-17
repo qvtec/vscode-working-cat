@@ -40,8 +40,61 @@
   const DECO_CHANCE = 0.15; // 15% でレアキャラ登場
 
   const LOCAL_ID = '__local__';
-  const cats = new Map(); // id -> { el, img, imgWrap, decoration, decorationIndex, labelWrap, title, status, animTimer, labelTimer, snoozeTimers, state, dismissed, entering, pendingState }
+  const cats = new Map(); // id -> { el, img, imgWrap, decoration, decorationIndex, labelWrap, name, fallbackName, status, animTimer, labelTimer, snoozeTimers, state, dismissed, entering, pendingState }
   const LABEL_HIDE_STATES = new Set(['idle', 'sleeping', 'claude_idle', 'claude_thinking', 'typing']);
+
+  // 足元に出す名前。ユーザーが付けた名前 > セッションタイトル > 作業ディレクトリ名
+  function displayName(id) {
+    const cat = cats.get(id);
+    const override = NAME_OVERRIDES[id];
+    if (override) return override;
+    return cat?.fallbackName || '';
+  }
+
+  function renderName(id) {
+    const cat = cats.get(id);
+    if (!cat || cat.name.dataset.editing === '1') return;
+    const text = displayName(id);
+    cat.name.textContent = text;
+    cat.name.title = text ? `${text}（クリックで名前を編集）` : 'クリックで名前を付ける';
+  }
+
+  function startEditName(id) {
+    const cat = cats.get(id);
+    if (!cat || cat.name.dataset.editing === '1') return;
+    cat.name.dataset.editing = '1';
+
+    const input = document.createElement('input');
+    input.className = 'cat-name-input';
+    input.type = 'text';
+    input.maxLength = 60;
+    input.value = displayName(id);
+    cat.name.textContent = '';
+    cat.name.appendChild(input);
+    input.focus();
+    input.select();
+
+    let finished = false;
+    function finish(commit) {
+      if (finished) return;
+      finished = true;
+      const value = input.value.trim();
+      input.remove();
+      cat.name.dataset.editing = '';
+      if (commit) {
+        if (value) NAME_OVERRIDES[id] = value;
+        else delete NAME_OVERRIDES[id];
+        vscode.postMessage({ type: 'renameSession', id, name: value });
+      }
+      renderName(id);
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+      else if (e.key === 'Escape') { e.preventDefault(); finish(false); }
+    });
+    input.addEventListener('blur', () => finish(true));
+  }
 
   // 背景画像の高さ比率を取得して猫の top% を補正する
   function getBgRatio() {
@@ -99,6 +152,8 @@
 
     item.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
+      // 名前テキストはドラッグ対象外（クリックで編集に入る）
+      if (e.target.closest('.cat-name')) return;
       e.preventDefault();
       const startX = e.clientX;
       const startY = e.clientY;
@@ -186,14 +241,15 @@
     const labelWrap = document.createElement('div');
     labelWrap.className = 'cat-label-wrap';
 
-    const title = document.createElement('div');
-    title.className = 'cat-title';
-
     const status = document.createElement('div');
     status.className = 'cat-status';
 
-    labelWrap.appendChild(title);
     labelWrap.appendChild(status);
+
+    // 足元のセッション名（クリックで編集）
+    const nameEl = document.createElement('div');
+    nameEl.className = 'cat-name';
+    nameEl.addEventListener('click', () => startEditName(id));
 
     const notifType = document.createElement('div');
     notifType.className = 'cat-notif-type';
@@ -201,13 +257,14 @@
 
     item.appendChild(imgWrap);
     item.appendChild(labelWrap);
+    item.appendChild(nameEl);
     item.appendChild(notifType);
     container.appendChild(item);
 
-    const cat = { el: item, img, imgWrap, decoration: decoEl, labelWrap, title, status, notifType, animTimer: null, labelTimer: null, soundTimers: [], snoozeTimers: [], state: null, toggled: false, entering: false, pendingState: null, customPos: null };
+    const cat = { el: item, img, imgWrap, decoration: decoEl, labelWrap, name: nameEl, fallbackName: id === LOCAL_ID ? 'editor' : '', status, notifType, animTimer: null, labelTimer: null, soundTimers: [], snoozeTimers: [], state: null, toggled: false, entering: false, pendingState: null, customPos: null };
     cats.set(id, cat);
     applySpot(item, imgWrap, spot);
-    if (id === LOCAL_ID) title.textContent = 'editor';
+    renderName(id);
     applyState(id, initialState);
     return cat;
   }
@@ -360,6 +417,11 @@ function applyState(id, state) {
     el.play().catch(() => {});
   }
 
+  function basename(dir) {
+    if (!dir) return '';
+    return dir.replace(/[\\/]+$/, '').split(/[\\/]/).pop() || '';
+  }
+
   function claudeStatusToState(status) {
     if (status === 'thinking') return 'claude_thinking';
     if (status === 'complete') return 'claude_complete';
@@ -449,7 +511,8 @@ function applyState(id, state) {
           }
           const cat = cats.get(session.id);
           if (cat) {
-            cat.title.textContent = session.title || '';
+            cat.fallbackName = session.title || basename(session.dir) || session.id;
+            renderName(session.id);
             cat.notifType.textContent = session.notificationType || '';
           }
         }

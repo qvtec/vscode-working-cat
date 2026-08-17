@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-  const provider = new CatViewProvider(context.extensionUri);
+  const provider = new CatViewProvider(context.extensionUri, context.globalState);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(CatViewProvider.viewType, provider)
   );

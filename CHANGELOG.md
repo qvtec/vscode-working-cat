@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.2
+
+- Session title is now shown at the cat's feet (moved out of the speech bubble, which now shows status only)
+- Click the title to rename a cat — Enter to save, Esc to cancel, empty to restore the original title
+
 ## 1.2.1
 
 - Added PostToolUse hook event mapping (thinking state)

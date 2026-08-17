@@ -3,15 +3,17 @@
 <div align="center">
 
 [![Version](https://badgen.net/vs-marketplace/v/qvtec3.vscode-working-cat)](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat)
-[![License](https://img.shields.io/github/license/qvtec/swagger-php-annotation?style=flat)](https://github.com/qvtec/swagger-php-annotation/blob/main/LICENSE)
-<!-- [![Installs](https://badgen.net/vs-marketplace/i/qvtec3.swagger-php-annotation)](https://marketplace.visualstudio.com/items?itemName=qvtec3.swagger-php-annotation)
-[![Stars](https://img.shields.io/github/stars/qvtec/swagger-php-annotation?style=flat)](https://github.com/qvtec/swagger-php-annotation/stargazers) -->
+[![License](https://img.shields.io/github/license/qvtec/vscode-working-cat?style=flat)](https://github.com/qvtec/vscode-working-cat/blob/main/LICENSE)
+<!-- [![Installs](https://badgen.net/vs-marketplace/i/qvtec3.vscode-working-cat)](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat)
+[![Stars](https://img.shields.io/github/stars/qvtec/vscode-working-cat?style=flat)](https://github.com/qvtec/vscode-working-cat/stargazers) -->
 
 [📦 VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=qvtec3.vscode-working-cat) • [🐛 Issues](https://github.com/qvtec/vscode-working-cat/issues) • [📋 Changelog](https://github.com/qvtec/vscode-working-cat/blob/main/CHANGELOG.md) • [🇯🇵 日本語](README.ja.md)
 
 </div>
 
-A cat lives in your VS Code sidebar and reacts to your coding activity — and to your Claude Code sessions.
+**Never miss a Claude Code prompt again.** Working Cat puts a cat in your VS Code sidebar that reacts to your Claude Code sessions in real time — it walks in when a session starts, waves when Claude is **waiting for permission**, and lets you know the moment a task is **done** or hits an **error**. Running several sessions at once? Each gets its own cat.
+
+(It also reacts to your own editor activity — typing, saving, errors, and idle time.)
 
 <table><tr>
 <td><img src="assets/demo.gif" width="300" /></td>
@@ -23,7 +25,7 @@ A cat lives in your VS Code sidebar and reacts to your coding activity — and t
 - **Editor cat** — animates on typing, saving, errors, and idle
 - **Claude Code cats** — each active session gets its own cat with a walking entrance animation
 - **Multi-session support** — multiple cats appear at once for concurrent Claude sessions
-- **Session titles** — displayed each Claude cat
+- **Session titles** — shown at each cat's feet; click to rename a cat yourself
 - **Draggable cats** — drag any cat to reposition it freely
 - **Cat sounds** — meows on key events, toggleable with volume control
 - **Snooze reminders** — plays a sound at set intervals while waiting for permission
